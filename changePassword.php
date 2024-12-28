@@ -1,11 +1,68 @@
 <?php
 session_start();
-if (!isset($_SESSION["sess_user"])) {
-    header("location:login.php");
-    exit;
+include "connect.php";
+
+// Ensure the user is logged in
+if (!isset($_SESSION['sess_user'])) {
+    echo "You need to log in first.";
+    exit();
 }
 
-include "connect.php";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    mysqli_select_db($con, $mydb);
+
+    $oldPassword = $_POST['oldpassword'];
+    $confirmPassword = $_POST['confirmpassword'];
+    $newPassword = $_POST['newpassword'];
+    $username = $_SESSION['sess_user']; // Get the logged-in user's username from session
+
+    // Query to get the stored password
+    $query = "SELECT password FROM club WHERE name = ?";
+    $stmt = $con->prepare($query);
+
+    if ($stmt) {
+        $stmt->bind_param("s", $username); // Bind as string
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $dbPassword = $row['password'];
+
+            // Verify the old password (direct comparison for plain text)
+            if ($oldPassword === $dbPassword) {
+                // Check if the new password matches the confirm password
+                if ($newPassword === $confirmPassword) {
+                    // Update the password in the database
+                    $updateQuery = "UPDATE club SET password = ? WHERE name = ?";
+                    $updateStmt = $con->prepare($updateQuery);
+
+                    if ($updateStmt) {
+                        $updateStmt->bind_param("ss", $newPassword, $username); // Bind as string
+                        if ($updateStmt->execute()) {
+                            echo "Password changed successfully.";
+                        } else {
+                            echo "Error updating password: " . $con->error;
+                        }
+                        $updateStmt->close();
+                    } else {
+                        echo "Error preparing update statement: " . $con->error;
+                    }
+                } else {
+                    echo "New password and confirm password do not match.";
+                }
+            } else {
+                echo "Old password is incorrect.";
+            }
+        } else {
+            echo "User not found.";
+        }
+        $stmt->close();
+    } else {
+        echo "Error preparing query: " . $con->error;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -14,23 +71,27 @@ include "connect.php";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Information</title>
+    <title>Change Password</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" />
-    <script>
-        function checkDelete() {
-            return confirm('Are you sure you want to delete this record?');
-        }
-    </script>
     <style>
+        .boder {
+            border: 1px solid yellow;
+            width: 50%;
+            height: 30%;
+        }
+
         span{
     color:blueviolet;
     font-size: 20px;
 }
-        .txtheader {
-            padding-top: 20px;
-            padding-bottom: 20px;
+        label {
+            
+            font-size: 20px;
+            color:aquamarine;
         }
+       
     </style>
 </head>
 
@@ -93,7 +154,7 @@ include "connect.php";
 
         </nav>
         <main class="col-10 bg-secondary">
-
+        
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="flex-fill">
                 <center> <span>Welcome, <?php echo htmlspecialchars($_SESSION['sess_user']); ?>!</span></center>
@@ -120,66 +181,24 @@ include "connect.php";
                 </ul>
                 
             </nav>
-                <center>
-                    <h1 class="txtheader">Sport Club Student Information</h1>
-                    <form action="" method="GET" class="mb-3">
-                        <div class="input-group" style="width: 30%; float: right;">
-                            <input type="text" id="search" class="form-control" name="search" placeholder="Search by name">
-                            <button type="submit" class="btn btn-primary">Search</button>
-                        </div>
-                    </form>
+    <center>
+        <h1>Change Password</h1>
+       
 
-                    <?php
-                    // Fetch student data based on search query
-                    $searchQuery = "";
-                    mysqli_select_db($con,$mydb);
-
-                    if (isset($_GET['search']) && !empty($_GET['search'])) {
-                        $search = mysqli_real_escape_string($con, $_GET['search']);
-                        $searchQuery = "WHERE name LIKE '%$search%'";
-                    }
-
-                    $query = "SELECT * FROM students $searchQuery";
-                    $result = mysqli_query($con, $query);
-
-                    if ($result && mysqli_num_rows($result) > 0) {
-                        echo "<table class='table table-bordered table-striped'>";
-                        echo "<thead><tr><th>#</th><th>Student Name</th><th>Age</th><th>Phone</th><th>Email</th><th>Address</th><th>Date of Birth</th><th>Class</th><th>Region</th><th>Actions</th></tr></thead>";
-                        echo "<tbody>";
-
-                        $i = 0;
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $i++;
-                            echo "<tr>";
-                            echo "<td>$i</td>";
-                            echo "<td>{$row['name']}</td>";
-                            echo "<td>{$row['age']}</td>";
-                            echo "<td>{$row['phone']}</td>";
-                            echo "<td>{$row['email']}</td>";
-                            echo "<td>{$row['address']}</td>";
-                            echo "<td>{$row['dob']}</td>";
-                            echo "<td>{$row['class']}</td>";
-                            echo "<td>{$row['region']}</td>";
-                            echo "<td>
-                                <a href='Update.php?edid={$row['id']}' class='btn btn-success btn-sm'>Update</a>
-                                <a href='Delete.php?did={$row['id']}' onclick='return checkDelete()' class='btn btn-danger btn-sm'>Delete</a>
-                              </td>";
-                            echo "</tr>";
-                        }
-
-                        echo "</tbody></table>";
-                    } else {
-                        echo "<p class='text-danger'>No records found.</p>";
-                    }
-
-                    mysqli_close($con);
-                    ?>
-                </center>
-            </main>
-            <footer class="text-center py-4 text-muted">&copy; Copyright 2024</footer>
+        <div class="container mt-4 boder">
+            <form action="changePassword.php" method="POST">
+                <label for="oldpassword" class="form-label">Old Password:</label>
+                <input type="password" name="oldpassword" id="oldpassword" class="form-control" style="width: 50%;" required><br>
+               
+                <label for="newpassword" class="form-label">New Password:</label>
+                <input type="password" name="newpassword" id="newpassword" class="form-control" style="width: 50%;" required><br>
+                <label for="confirmpassword" class="form-label">Confirm Password:</label>
+                <input type="password" name="confirmpassword" id="confirmpassword" class="form-control" style="width: 50%;" required><br>
+                <a href="#" class="btn btn-success" name="submit">Change</a>
+            </form>
         </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    </center>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

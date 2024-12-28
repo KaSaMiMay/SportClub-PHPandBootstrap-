@@ -1,9 +1,9 @@
 <?php
-// session_start();
-// if (!isset($_SESSION["sess_user"])) {
-//     header("location:Login.php");
-//     exit();
-// } else {
+session_start();
+if (!isset($_SESSION["sess_user"])) {
+    header("location:Login.php");
+    exit();
+} else {
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,6 +35,10 @@
             background: skyblue;
             border: 5px solid darkblue;
         }
+        span{
+    color:blueviolet;
+    font-size: 20px;
+}
 
         #p {
             position: absolute;
@@ -60,7 +64,7 @@
 
 <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
+    
     <div class="container-fluid">
         <div class="row g-0">
             <nav class="col-2 bg-light pe-3">
@@ -116,7 +120,7 @@
 
                                     if (notificationCount > 0) {
                                         // Show the count in red if there are new notifications
-                                        notificationElement.text('Reports (' + notificationCount + ')');
+                                        notificationElement.text(' + notificationCount + ');
                                         notificationElement.css('color', 'red');
                                     } else {
                                         // Show default text when no new notifications exist
@@ -150,40 +154,7 @@
 
 
 
-                    <!-- <a href="report.php" class="list-group-item list-group-item-action">
-                            <i class="fas fa-flag">
-                            <span class="d-none d-lg-inline">Reports</span></i>
-                        </a> -->
-                    <!-- <?php
-                            //                     include "connect.php";
-                            //                     mysqli_select_db($con, $mydb);
-
-                            //                     // Check for new reports
-                            //                     $query = "SELECT COUNT(*) AS newReports FROM reports WHERE status = 'new'";
-                            //                     $result = mysqli_query($con, $query);
-                            //                     $row = mysqli_fetch_assoc($result);
-                            //                     $newReports = $row['newReports'];
-
-
-                            //                     if ($newReports > 0) {
-                            //                         echo '<a href="report.php" class="list-group-item list-group-item-action">
-                            //             <i class="fas fa-flag"></i>
-                            //            <span class="d-none d-lg-inline">
-                            //     Reports 
-                            //     <span id="student-badge" class="badge bg-danger rounded-pill float-end">
-                            //         <?= $newReports; 
-                            ?> New
-//     </span>
-// </span>
-
-//           </a>';
-//                     } else {
-//                         echo '<a href="report.php" class="list-group-item list-group-item-action">
-//             <i class="fas fa-flag"></i>
-//             <span class="d-none d-lg-inline">Reports</span>
-//           </a>';
-//                     }
-                    ?> -->
+                   
 
                 </div>
                 <div class="list-group mt-4 text-center text-lg-start">
@@ -207,20 +178,23 @@
                 </div>
 
             </nav>
+            
             <main class="col-10 bg-secondary">
-
                 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                    <!-- <span class="navbar-text">
-                            Welcome, 
-                        </span> -->
-                    <div class="flex-fill"></div>
+                
+
+                    <div class="flex-fill">
+                    <center> <span>Welcome, <?php echo htmlspecialchars($_SESSION['sess_user']); ?>!</span></center>
+                    </div>
 
                     <ul class="navbar-nav">
                         <li class="nav-item dropdown">
+                            
                             <a href="#" class="nav-link dropdown-toggle"
                                 data-bs-toggle="dropdown">
                                 <i class="fas fa-user-circle"></i>
                             </a>
+                            
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
                                     <a href="UserProfile.php" class="dropdown-item">User Profile</a>
@@ -230,6 +204,7 @@
                                 </li>
                             </ul>
                         </li>
+                        
                         <li class="nav-item">
                             <a href="#" class="nav-link"><i class="fas fa-cog"></i></a>
                         </li>
@@ -361,5 +336,5 @@
 
 </html>
 <?php
-//}
+}
 ?>

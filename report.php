@@ -1,3 +1,9 @@
+<?php
+session_start();
+if (!isset($_SESSION["sess_user"])) {
+    header("location:login.php");
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -16,6 +22,10 @@
 
 
     <style>
+        span{
+    color:blueviolet;
+    font-size: 20px;
+}
        
         #box {
             position: relative;
@@ -154,7 +164,10 @@ $newReports = $row['newReports'];
             <main class="col-10 bg-secondary">
             
                 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                    <div class="flex-fill"></div>
+                    <div class="flex-fill">
+                    <center> <span>Welcome, <?php echo htmlspecialchars($_SESSION['sess_user']); ?>!</span></center>
+
+                    </div>
                     <ul class="navbar-nav">
                         <li class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle"

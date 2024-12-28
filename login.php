@@ -32,46 +32,55 @@
         <div class="container">
         
     <h2>Login</h2>
-    <form action="AdminDashboard.php" method="POST">
-        <label for="">Name :</label>
-        <input type="text" name="Uname" id=""  class="form-control" style="width: 50%;"><br><br>
-        <label for="">Password :</label>
-        <input type="password" name="pss" id=""  class="form-control" style="width: 50%;"><br><br>
-        <button class="btn btn-success" name="submit">Login</button>
+    <form action="Login.php" method="POST">
+    <label for="name">Name:</label>
+    <input type="text" name="name" id="name" class="form-control" style="width: 50%;" required><br><br>
+    <label for="password">Password:</label>
+    <input type="password" name="password" id="password" class="form-control" style="width: 50%;" required><br><br>
+    <button class="btn btn-success" name="submit" type="submit">Login</button>
     </form>
+
     </div>
-    </center>
+    </center> 
     
-    <?php
-    if (isset($_POST['submit'])) {
-        if (!empty($_POST['Uname']) && !empty($_POST['pss'])) {
-            $user = $_POST['Uname'];
-            $pwd = $_POST['pss'];
-
-            include "connect.php";
-
-            $con = mysqli_connect('localhost', 'root', '', 'sportclubdb') ;
-            $query = mysqli_query($con, "SELECT * FROM club WHERE name='$user' AND password='$pwd' ");
-            $numrows = mysqli_num_rows($query);
-            if ($numrows != 0) {
-                while ($row = mysqli_fetch_assoc($query)) {
-                    $dbusername = $row['name'];
-                    $dbpassword = $row['password'];
-                }
-                if ($user == $dbusername && $pwd == $dbpassword) {
-                    session_start();
-                    $_SESSION['sess_user'] = $user;
-                    header("Location: AdminDashboard.php");
-                }
-            } else {
-                echo "Invalid username or password!";
-            }
-        } else {
-            echo "All fields are required!";
-        }
-        mysqli_close($con);
-    }
-   
+     <!-- <?php
+    
     ?> 
+ -->
+
+ <?php
+session_start();
+if (isset($_POST['submit'])) {
+    $user = trim($_POST['name']);
+    $pwd = trim($_POST['password']);
+
+    if (!empty($user) && !empty($pwd)) {
+        // Secure database connection
+        $con = mysqli_connect('localhost', 'root', '', 'sportclubdb');
+        if (!$con) {
+            die("Connection failed: " . mysqli_connect_error());
+        }
+
+        // Use prepared statement to prevent SQL injection
+        $stmt = $con->prepare("SELECT * FROM club WHERE name = ? AND password = ?");
+        $stmt->bind_param("ss", $user, $pwd);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $_SESSION['sess_user'] = $user; // Store username in session
+            header("Location: AdminDashboard.php");
+            exit(); // Stop further script execution after redirection
+        } else {
+            echo "<div style='color: red; text-align: center;'>Invalid username or password!</div>";
+        }
+        $stmt->close();
+        $con->close();
+    } else {
+        echo "<div style='color: red; text-align: center;'>All fields are required!</div>";
+    }
+}
+?>
+
 </body>
 </html>

@@ -40,7 +40,7 @@
     </style>
 </head>
 
-<body>
+<body style="background-color:lightblue;">
 
     <div class="i">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
